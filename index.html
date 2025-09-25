@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confidential Performance Monitor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header-icon {
+            font-size: 4rem;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .connection-status {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-item {
+            text-align: center;
+        }
+
+        .status-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .status-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+            margin-right: 15px;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-connect {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            margin-bottom: 30px;
+        }
+
+        .metrics-display {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .metric-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .metric-item:last-child {
+            border-bottom: none;
+        }
+
+        .metric-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .metric-value {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 1px solid #fcc;
+        }
+
+        .success-message {
+            background: #efe;
+            color: #363;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 1px solid #cfc;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            opacity: 0.8;
+            margin-top: 40px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .connection-status {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .container {
+                padding: 10px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-icon">📊</div>
+            <h1>Confidential Performance Monitor</h1>
+            <p class="subtitle">Secure and private system performance tracking using FHE technology</p>
+        </header>
+
+        <div class="connection-status">
+            <div class="status-item">
+                <div class="status-value" id="walletStatus">Disconnected</div>
+                <div class="status-label">Wallet Status</div>
+            </div>
+            <div class="status-item">
+                <div class="status-value" id="networkStatus">Unknown</div>
+                <div class="status-label">Network</div>
+            </div>
+            <div class="status-item">
+                <div class="status-value" id="contractStatus">Not Loaded</div>
+                <div class="status-label">Contract Status</div>
+            </div>
+            <div class="status-item">
+                <div class="status-value" id="totalMetrics">-</div>
+                <div class="status-label">Total Metrics</div>
+            </div>
+        </div>
+
+        <button class="btn btn-connect" id="connectWallet">Connect Wallet</button>
+
+        <div id="mainApp" class="hidden">
+            <div class="main-content">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">📈</div>
+                        <h2 class="card-title">Submit Performance Metrics</h2>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cpuUsage">CPU Usage (%)</label>
+                        <input type="number" id="cpuUsage" min="0" max="100" placeholder="Enter CPU usage percentage (0-100)">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="memoryUsage">Memory Usage (MB)</label>
+                        <input type="number" id="memoryUsage" min="1" placeholder="Enter memory usage in MB">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="networkLatency">Network Latency (ms)</label>
+                        <input type="number" id="networkLatency" min="0" placeholder="Enter network latency in milliseconds">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="throughput">Data Throughput (bytes/sec)</label>
+                        <input type="number" id="throughput" min="0" placeholder="Enter data throughput">
+                    </div>
+
+                    <button class="btn" id="submitMetrics">Submit Encrypted Metrics</button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">🔧</div>
+                        <h2 class="card-title">System Management</h2>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reporterAddress">Reporter Address</label>
+                        <input type="text" id="reporterAddress" placeholder="0x..." pattern="0x[a-fA-F0-9]{40}">
+                    </div>
+
+                    <button class="btn" id="authorizeReporter">Authorize Reporter</button>
+                    <button class="btn" id="revokeReporter">Revoke Reporter</button>
+
+                    <div class="form-group">
+                        <label for="systemAddress">System Address</label>
+                        <input type="text" id="systemAddress" placeholder="0x..." pattern="0x[a-fA-F0-9]{40}">
+                    </div>
+
+                    <button class="btn" id="getSystemInfo">Get System Information</button>
+                    <button class="btn" id="removeSystem">Remove System</button>
+                </div>
+            </div>
+
+            <div class="metrics-display">
+                <div class="card-header">
+                    <div class="card-icon">📋</div>
+                    <h2 class="card-title">System Information</h2>
+                </div>
+
+                <div id="systemInfoDisplay">
+                    <p class="loading">Select a system address and click "Get System Information" to view details</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Powered by FHE Technology | Confidential Performance Monitoring System</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script>
+        // Wait for ethers to load
+        window.addEventListener('load', function() {
+            if (typeof ethers === 'undefined') {
+                console.error('Ethers.js failed to load');
+                return;
+            }
+            init();
+        });
+    </script>
+    <script>
+        // Contract configuration
+        const CONTRACT_ADDRESS = '0x03B087793fcC92380e91a6a7af92DEAB98086f8A';
+        const CONTRACT_ABI = [
+            "function owner() view returns (address)",
+            "function totalMetrics() view returns (uint256)",
+            "function submitMetrics(uint32 _cpuUsage, uint32 _memoryUsage, uint32 _networkLatency, uint64 _throughput) external",
+            "function authorizeReporter(address _reporter) external",
+            "function revokeReporter(address _reporter) external",
+            "function getSystemInfo(address system) view returns (bool isActive, uint256 lastTimestamp, uint32 dataPoints)",
+            "function getMonitoredSystemsCount() view returns (uint256)",
+            "function removeSystem(address system) external",
+            "function isAuthorizedReporter(address reporter) view returns (bool)",
+            "event MetricsSubmitted(address indexed system, uint256 timestamp)",
+            "event ReporterAuthorized(address indexed reporter)",
+            "event ReporterRevoked(address indexed reporter)",
+            "event SystemRemoved(address indexed system)"
+        ];
+
+        let contract = null;
+        let signer = null;
+        let provider = null;
+        let userAccount = null;
+
+        // Initialize the application
+        async function init() {
+            setupEventListeners();
+            checkWalletConnection();
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            document.getElementById('connectWallet').addEventListener('click', connectWallet);
+            document.getElementById('submitMetrics').addEventListener('click', submitMetrics);
+            document.getElementById('authorizeReporter').addEventListener('click', authorizeReporter);
+            document.getElementById('revokeReporter').addEventListener('click', revokeReporter);
+            document.getElementById('getSystemInfo').addEventListener('click', getSystemInfo);
+            document.getElementById('removeSystem').addEventListener('click', removeSystem);
+        }
+
+        // Check if wallet is already connected
+        async function checkWalletConnection() {
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                    if (accounts.length > 0) {
+                        await connectWallet();
+                    }
+                } catch (error) {
+                    console.log('Error checking wallet connection:', error);
+                }
+            }
+        }
+
+        // Connect to MetaMask wallet
+        async function connectWallet() {
+            try {
+                if (typeof window.ethereum === 'undefined') {
+                    showError('MetaMask not detected. Please install MetaMask to use this application.');
+                    return;
+                }
+
+                showLoading('Connecting to wallet...');
+
+                const accounts = await window.ethereum.request({
+                    method: 'eth_requestAccounts'
+                });
+
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+                userAccount = accounts[0];
+
+                // Check network
+                const network = await provider.getNetwork();
+                document.getElementById('networkStatus').textContent = network.name || `Chain ${network.chainId}`;
+
+                // Initialize contract
+                contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+
+                // Update UI
+                document.getElementById('walletStatus').textContent = 'Connected';
+                document.getElementById('contractStatus').textContent = 'Loaded';
+                document.getElementById('connectWallet').style.display = 'none';
+                document.getElementById('mainApp').classList.remove('hidden');
+
+                // Load initial data
+                await updateSystemStatus();
+
+                removeMessages();
+                showSuccess('Wallet connected successfully!');
+
+                // Listen for account changes
+                window.ethereum.on('accountsChanged', handleAccountsChanged);
+                window.ethereum.on('chainChanged', handleChainChanged);
+
+            } catch (error) {
+                console.error('Error connecting wallet:', error);
+                showError('Failed to connect wallet: ' + error.message);
+            }
+        }
+
+        // Handle account changes
+        function handleAccountsChanged(accounts) {
+            if (accounts.length === 0) {
+                // User disconnected
+                document.getElementById('walletStatus').textContent = 'Disconnected';
+                document.getElementById('contractStatus').textContent = 'Not Loaded';
+                document.getElementById('connectWallet').style.display = 'block';
+                document.getElementById('mainApp').classList.add('hidden');
+                contract = null;
+                signer = null;
+                userAccount = null;
+            } else if (accounts[0] !== userAccount) {
+                // User switched accounts
+                window.location.reload();
+            }
+        }
+
+        // Handle chain changes
+        function handleChainChanged(chainId) {
+            window.location.reload();
+        }
+
+        // Submit performance metrics
+        async function submitMetrics() {
+            if (!contract) {
+                showError('Please connect your wallet first.');
+                return;
+            }
+
+            try {
+                const cpuUsage = document.getElementById('cpuUsage').value;
+                const memoryUsage = document.getElementById('memoryUsage').value;
+                const networkLatency = document.getElementById('networkLatency').value;
+                const throughput = document.getElementById('throughput').value;
+
+                if (!cpuUsage || !memoryUsage || !networkLatency || !throughput) {
+                    showError('Please fill in all metric fields.');
+                    return;
+                }
+
+                if (parseInt(cpuUsage) > 100 || parseInt(cpuUsage) < 0) {
+                    showError('CPU usage must be between 0 and 100.');
+                    return;
+                }
+
+                showLoading('Submitting encrypted metrics to blockchain...');
+
+                const tx = await contract.submitMetrics(
+                    parseInt(cpuUsage),
+                    parseInt(memoryUsage),
+                    parseInt(networkLatency),
+                    parseInt(throughput)
+                );
+
+                showLoading('Transaction submitted. Waiting for confirmation...');
+                await tx.wait();
+
+                showSuccess('Metrics submitted successfully! Transaction confirmed.');
+                await updateSystemStatus();
+                clearMetricsForm();
+
+            } catch (error) {
+                console.error('Error submitting metrics:', error);
+                if (error.code === 4001) {
+                    showError('Transaction cancelled by user.');
+                } else if (error.code === -32603) {
+                    showError('Transaction failed. Please check your inputs and try again.');
+                } else {
+                    showError('Failed to submit metrics: ' + (error.reason || error.message));
+                }
+            }
+        }
+
+        // Authorize a reporter
+        async function authorizeReporter() {
+            if (!contract) {
+                showError('Please connect your wallet first.');
+                return;
+            }
+
+            try {
+                const address = document.getElementById('reporterAddress').value;
+                if (!address || !ethers.utils.isAddress(address)) {
+                    showError('Please enter a valid reporter address.');
+                    return;
+                }
+
+                showLoading('Authorizing reporter...');
+
+                const tx = await contract.authorizeReporter(address);
+                showLoading('Transaction submitted. Waiting for confirmation...');
+                await tx.wait();
+
+                showSuccess('Reporter authorized successfully!');
+                document.getElementById('reporterAddress').value = '';
+
+            } catch (error) {
+                console.error('Error authorizing reporter:', error);
+                if (error.code === 4001) {
+                    showError('Transaction cancelled by user.');
+                } else {
+                    showError('Failed to authorize reporter: ' + (error.reason || error.message));
+                }
+            }
+        }
+
+        // Revoke a reporter
+        async function revokeReporter() {
+            if (!contract) {
+                showError('Please connect your wallet first.');
+                return;
+            }
+
+            try {
+                const address = document.getElementById('reporterAddress').value;
+                if (!address || !ethers.utils.isAddress(address)) {
+                    showError('Please enter a valid reporter address.');
+                    return;
+                }
+
+                showLoading('Revoking reporter...');
+
+                const tx = await contract.revokeReporter(address);
+                showLoading('Transaction submitted. Waiting for confirmation...');
+                await tx.wait();
+
+                showSuccess('Reporter revoked successfully!');
+                document.getElementById('reporterAddress').value = '';
+
+            } catch (error) {
+                console.error('Error revoking reporter:', error);
+                if (error.code === 4001) {
+                    showError('Transaction cancelled by user.');
+                } else {
+                    showError('Failed to revoke reporter: ' + (error.reason || error.message));
+                }
+            }
+        }
+
+        // Get system information
+        async function getSystemInfo() {
+            if (!contract) {
+                showError('Please connect your wallet first.');
+                return;
+            }
+
+            try {
+                const address = document.getElementById('systemAddress').value;
+                if (!address || !ethers.utils.isAddress(address)) {
+                    showError('Please enter a valid system address.');
+                    return;
+                }
+
+                showLoading('Fetching system information...');
+
+                const info = await contract.getSystemInfo(address);
+                const isAuthorized = await contract.isAuthorizedReporter(address);
+
+                displaySystemInfo(info, address, isAuthorized);
+                removeMessages();
+
+            } catch (error) {
+                console.error('Error getting system info:', error);
+                showError('Failed to get system info: ' + (error.reason || error.message));
+            }
+        }
+
+        // Remove system
+        async function removeSystem() {
+            if (!contract) {
+                showError('Please connect your wallet first.');
+                return;
+            }
+
+            try {
+                const address = document.getElementById('systemAddress').value;
+                if (!address || !ethers.utils.isAddress(address)) {
+                    showError('Please enter a valid system address.');
+                    return;
+                }
+
+                if (!confirm('Are you sure you want to remove this system from monitoring?')) {
+                    return;
+                }
+
+                showLoading('Removing system...');
+
+                const tx = await contract.removeSystem(address);
+                showLoading('Transaction submitted. Waiting for confirmation...');
+                await tx.wait();
+
+                showSuccess('System removed successfully!');
+                document.getElementById('systemAddress').value = '';
+                await updateSystemStatus();
+
+            } catch (error) {
+                console.error('Error removing system:', error);
+                if (error.code === 4001) {
+                    showError('Transaction cancelled by user.');
+                } else {
+                    showError('Failed to remove system: ' + (error.reason || error.message));
+                }
+            }
+        }
+
+        // Display system information
+        function displaySystemInfo(info, address, isAuthorized) {
+            const display = document.getElementById('systemInfoDisplay');
+            display.innerHTML = `
+                <div class="metric-item">
+                    <span class="metric-name">System Address:</span>
+                    <span class="metric-value">${address}</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-name">Status:</span>
+                    <span class="metric-value">${info.isActive ? 'Active' : 'Inactive'}</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-name">Authorized Reporter:</span>
+                    <span class="metric-value">${isAuthorized ? 'Yes' : 'No'}</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-name">Last Update:</span>
+                    <span class="metric-value">${info.lastTimestamp.toString() === '0' ? 'Never' : new Date(info.lastTimestamp * 1000).toLocaleString()}</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-name">Data Points:</span>
+                    <span class="metric-value">${info.dataPoints.toString()}</span>
+                </div>
+            `;
+        }
+
+        // Update system status
+        async function updateSystemStatus() {
+            if (!contract) return;
+
+            try {
+                const totalMetrics = await contract.totalMetrics();
+                document.getElementById('totalMetrics').textContent = totalMetrics.toString();
+            } catch (error) {
+                console.error('Error updating system status:', error);
+            }
+        }
+
+        // Utility functions
+        function showError(message) {
+            removeMessages();
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+            document.querySelector('.container').insertBefore(errorDiv, document.querySelector('.connection-status').nextSibling);
+        }
+
+        function showSuccess(message) {
+            removeMessages();
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success-message';
+            successDiv.textContent = message;
+            document.querySelector('.container').insertBefore(successDiv, document.querySelector('.connection-status').nextSibling);
+        }
+
+        function showLoading(message) {
+            removeMessages();
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'loading';
+            loadingDiv.innerHTML = `<span class="spinner"></span>${message}`;
+            document.querySelector('.container').insertBefore(loadingDiv, document.querySelector('.connection-status').nextSibling);
+        }
+
+        function removeMessages() {
+            const messages = document.querySelectorAll('.error-message, .success-message, .loading');
+            messages.forEach(msg => msg.remove());
+        }
+
+        function clearMetricsForm() {
+            document.getElementById('cpuUsage').value = '';
+            document.getElementById('memoryUsage').value = '';
+            document.getElementById('networkLatency').value = '';
+            document.getElementById('throughput').value = '';
+        }
+
+        // Remove duplicate event listener since we already have one above
+    </script>
+</body>
+</html>
