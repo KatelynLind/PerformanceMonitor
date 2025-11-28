@@ -1,0 +1,30 @@
+{
+  "extends": "solhint:recommended",
+  "plugins": [],
+  "rules": {
+    "compiler-version": ["error", "^0.8.24"],
+    "func-visibility": ["warn", { "ignoreConstructors": true }],
+    "max-line-length": ["warn", 120],
+    "not-rely-on-time": "warn",
+    "avoid-low-level-calls": "warn",
+    "avoid-sha3": "warn",
+    "avoid-suicide": "error",
+    "avoid-throw": "error",
+    "check-send-result": "error",
+    "func-name-mixedcase": "error",
+    "use-forbidden-name": "error",
+    "mark-callable-contracts": "off",
+    "multiple-sends": "warn",
+    "no-complex-fallback": "warn",
+    "no-inline-assembly": "off",
+    "no-unused-vars": "error",
+    "payable-fallback": "warn",
+    "reentrancy": "error",
+    "state-visibility": "error",
+    "var-name-mixedcase": "error",
+    "gas-indexed-events": "warn",
+    "gas-calldata-parameters": "warn",
+    "gas-strict-inequalities": "warn",
+    "gas-named-return-values": "warn"
+  }
+}
