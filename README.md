@@ -2,7 +2,7 @@
 
 A blockchain-based performance monitoring system with **privacy-preserving** capabilities using **Zama FHEVM** (Fully Homomorphic Encryption) for confidential metrics analysis on Sepolia testnet.
 
-**[Live Demo](https://performance-monitor-fhe.vercel.app)** | **[Video Demo](https://streamable.com/1k2bji)** | **[Contract on Etherscan](https://sepolia.etherscan.io/)**
+**[Live Demo](https://performance-monitor-pearl.vercel.app/)** | **[Video Demo](https://streamable.com/1k2bji)** | **[Contract on Etherscan](https://sepolia.etherscan.io/)**
 
 ---
 
