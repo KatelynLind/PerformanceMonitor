@@ -1,0 +1,8 @@
+
+> performance-monitor-fhe@1.0.0 test
+> npx hardhat test
+
+[31m[1mError[22m[39m [31m[1mHH801:[22m[39m Plugin @nomicfoundation/hardhat-toolbox requires the following dependencies to be installed: @nomicfoundation/hardhat-chai-matchers, @nomicfoundation/hardhat-network-helpers, @nomicfoundation/hardhat-verify, @typechain/ethers-v6, @types/chai, @types/mocha, chai, typechain.
+Please run: npm install --save-dev "@nomicfoundation/hardhat-chai-matchers@^2.0.0" "@nomicfoundation/hardhat-network-helpers@^1.0.0" "@nomicfoundation/hardhat-verify@^2.0.0" "@typechain/ethers-v6@^0.5.0" "@types/chai@^4.2.0" "@types/mocha@>=9.1.0" "chai@^4.2.0" "typechain@^8.3.0"
+
+For more info go to https://v2.hardhat.org/HH801 or run Hardhat with --show-stack-traces
